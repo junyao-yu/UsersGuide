@@ -3,7 +3,14 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <com.usersguide.GuideView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+
+    <TextView
+        android:id="@+id/textview1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="200dp"
+        android:textSize="30sp"
+        android:text="哈哈"/>
+
 </LinearLayout>

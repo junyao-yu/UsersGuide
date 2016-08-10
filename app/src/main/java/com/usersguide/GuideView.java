@@ -1,6 +1,7 @@
 package com.usersguide;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,7 +20,15 @@ import android.view.View;
  */
 public class GuideView extends View{
     private Paint mPaint = new Paint();
+    private Bitmap bitmapBkg = null;
+    private Bitmap bitmapFigure = null;
     private static final Xfermode sXfermode = new PorterDuffXfermode(PorterDuff.Mode.XOR);
+    private int x, y, radius;
+
+    /**默认间隔距离*/
+    private float defaultSpacing = 0;
+    /**间隔距离(文字与选中圈之间的padding)*/
+    private float textCircleSpacing;
 
     public GuideView(Context context) {
         this(context, null);
@@ -31,6 +40,9 @@ public class GuideView extends View{
 
     public GuideView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        final TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.GuideView, defStyleAttr, 0);
+        textCircleSpacing = attributes.getDimension(R.styleable.GuideView_spacing, defaultSpacing);
+        attributes.recycle();
         initPaint();
     }
 
@@ -46,6 +58,12 @@ public class GuideView extends View{
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setXfermode(sXfermode);
+    }
+
+    public void setData(int x, int y, int radius) {
+        this.x = (int) (x - textCircleSpacing);
+        this.y = (int) (y - textCircleSpacing);
+        this.radius = (int) (radius + 2 * textCircleSpacing);
     }
 
     private Bitmap drawBackground() {
@@ -64,7 +82,7 @@ public class GuideView extends View{
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setAntiAlias(true);
         paint.setColor(Color.BLUE);
-        RectF localRectF = new RectF(100, 100, 500, 500);
+        RectF localRectF = new RectF(x, y, x + radius, y + radius);
         canvas.drawOval(localRectF, paint);
         return bitmap;
     }
@@ -74,12 +92,27 @@ public class GuideView extends View{
         super.onDraw(canvas);
         int iLayer = canvas.saveLayer(0, 0, getWidth(), getHeight(), null, Canvas.ALL_SAVE_FLAG);
 
-        canvas.drawBitmap(drawBackground(), 0, 0, mPaint);
+        bitmapBkg = drawBackground();
+        canvas.drawBitmap(bitmapBkg, 0, 0, mPaint);
 
         resetPaint();
 
-        canvas.drawBitmap(drawFigure(), 0, 0, mPaint);
+        bitmapFigure = drawFigure();
+        canvas.drawBitmap(bitmapFigure, 0, 0, mPaint);
 
         canvas.restoreToCount(iLayer);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        isRecycle(bitmapBkg);
+        isRecycle(bitmapFigure);
+    }
+
+    private void isRecycle(Bitmap bitmap) {
+        if(!bitmap.isRecycled()) {
+            bitmap.recycle();
+        }
     }
 }
